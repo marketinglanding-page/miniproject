@@ -19,3 +19,4 @@ class Transaction(models.Model):
         db_table = 'transactions'
         verbose_name = '거래 내역'
         ordering = ['-transaction_timestamp']
+
