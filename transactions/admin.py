@@ -1,7 +1,5 @@
-# transactions/admin.py
-
 from django.contrib import admin
-from .models import Transaction  # ⭐️ 이전에 정의한 Transaction 모델을 불러옵니다.
+from .models import Transaction
 
 
 # 1. Transaction 모델의 Admin 표시 형식을 정의합니다.
