@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Transaction(models.Model):
     TYPE_CHOICES = [
         ('INCOME', '수입'),

@@ -6,7 +6,7 @@ from .serializers import TransactionSerializer
 
 
 class TransactionViewSet(viewsets.ModelViewSet):
-    # 쿼리셋: 모든 Transaction 객체
+    # 쿼리셋: 모든 Transaction  객체
     queryset = Transaction.objects.all()
 
     # 시리얼라이저: TransactionSerializer 사용
