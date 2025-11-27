@@ -1,22 +1,22 @@
 from django.db import models
-from accounts.models import Account # Account 모델 임포트
 
 class Transaction(models.Model):
-    account = models.ForeignKey(
-        Account, # accounts.Account 참조
-        on_delete=models.CASCADE,
-        related_name='transactions',
-        verbose_name="계좌"
+    TYPE_CHOICES = [
+        ('INCOME', '수입'),
+        ('EXPENSE', '지출'),
+    ]
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
     )
-    transaction_type = models.CharField(verbose_name="입금/출금", max_length=10)
-    transaction_method = models.CharField(verbose_name="거래방식", max_length=20)
-    amount = models.BigIntegerField(verbose_name="금액(원 단위)")
-    balance_after = models.BigIntegerField(verbose_name="거래후잔액(원 단위)")
-    transaction_details = models.CharField(verbose_name="상세내역", max_length=255)
-    transaction_timestamp = models.DateTimeField(verbose_name="거래일시")
+    description = models.CharField(max_length=255)
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'transactions'
-        verbose_name = '거래 내역'
-        ordering = ['-transaction_timestamp']
+        ordering = ['-date', '-created_at']
 
+    def __str__(self):
+        return f"[{self.date}] {self.transaction_type}: {self.amount}"
