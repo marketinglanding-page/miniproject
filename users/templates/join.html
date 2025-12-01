@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{%extends 'base.html'%}
+{% block content %}
+    <h1>아이디 만들기</h1>
+    <div> 새로운 아이디 </div>
+
+    {% if error_msg %}
+    <div>
+        {{ error_msg }}
+    </div>
+    {% endif %}
+
+    <form action="{% url 'users:JoinUrl' %}" method="post">
+        {% csrf_token %}
+
+
+        <div>이메일 : <input type="text" name="email"></div>
+        <div>이름 : <input type="text" name="name"></div>
+        <div>닉네임 : <input type="text" name="nickname"></div>
+        <div>비밀번호 : <input type="password" name="password"></div>
+        <div>비밀번호 확인 : <input type="password" name="password_check"></div>
+        <div>
+            <button type="submit" value="create" name="account">완료</button>
+            <button type="submit" value="cancel" name="account">취소</button>
+        </div>
+    </form>
+{% endblock %}
