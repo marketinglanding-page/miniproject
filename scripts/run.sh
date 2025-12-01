@@ -23,4 +23,4 @@ python manage.py migrate --noinput
 # ----------------------------------------------
 echo "Starting Gunicorn server..."
 # --workers: 워커 수는 보통 2 * CPU 코어 수 + 1 로 설정
-exec gunicorn core.wsgi:application --bind 0.0.0.0:8008 --workers 2 --log-level info
+exec gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 2 --log-level info
