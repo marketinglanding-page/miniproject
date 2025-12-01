@@ -31,7 +31,6 @@ urlpatterns = [
 
     # DRF API URL
     path('accounts/', include('accounts.urls')), # accounts 앱의 URL을 포함
-    path('transaction/', include(transaction.urls)),
-    # Login페이지
+    path('transactions/', include('transactions.urls')),
     path('users/', include('users.urls')),
 ]
