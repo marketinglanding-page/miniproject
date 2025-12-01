@@ -32,6 +32,8 @@ sqlparse = "0.5.3"
 # [tool.poetry.group.dev.dependencies]
 # ----------------------------------------------------
 [tool.poetry.group.dev.dependencies]
+djangorestframework = "^3.16.1"
+django-environ = "^0.12.0"
 # 테스트
 pytest = "^9.0.1"
 # 코드 포맷팅/린팅

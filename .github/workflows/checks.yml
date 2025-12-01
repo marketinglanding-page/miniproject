@@ -1,0 +1,95 @@
+# .github/workflows/checks.yml
+
+name: Django CI Checks (Poetry & Docker DB)
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 PUSH 발생 시 실행
+  pull_request:
+    branches:
+      - main # main 브랜치로 PR 요청 시 실행
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      # 1. Postgresql 서비스 생성 및 연결 테스트
+      # docker-compose 파일과 동일한 이미지 및 환경 변수 사용
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 5432:5432 # 내부 포트 5432 노출
+        # Docker Compose에서 사용된 healthcheck와 유사하게 설정
+        options: >-
+          --health-cmd pg_isready -U budget_admin -d budget
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13-slim'
+        cache: 'poetry'
+
+    - name: Install Poetry and Dependencies
+      run: |
+        # Poetry 설치
+        pip install poetry
+        # 의존성 설치
+        poetry install --no-root
+
+    # Environment Variables Setup (핵심)
+    # Django 설정이 환경 변수를 읽을 수 있도록 세팅합니다.
+    - name: Set Environment Variables for Django
+      run: |
+        # Dev 설정 모듈 사용 (CI/Test에 적합)
+        echo "DJANGO_SETTINGS_MODULE=core.settings.dev" >> $GITHUB_ENV
+        # Docker Compose에서 사용하는 환경 변수 이름 그대로 매핑
+        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+        echo "DB_USERNAME=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+        echo "DB_HOST=db" >> $GITHUB_ENV # GitHub Actions 서비스 이름(db)으로 연결
+        echo "DB_PORT=5432" >> $GITHUB_ENV # DB 기본 포트
+
+    # Wait for DB to be ready (서비스 헬스체크 외에 명시적으로 연결 확인)
+    - name: Wait for PostgreSQL connection
+      # psql 명령을 반복하여 DB 연결 준비 상태를 확인합니다.
+      run: |
+        apt-get update && apt-get install -y postgresql-client
+        for i in 1 2 3 4 5; do
+          if PGPASSWORD=${{ secrets.DB_PASSWORD }} psql -h db -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c '\q'; then
+            echo "PostgreSQL is ready!"
+            exit 0
+          fi
+          echo "Waiting for PostgreSQL... (Attempt $i/5)"
+          sleep 5
+        done
+        echo "PostgreSQL failed to start."
+        exit 1
+      shell: bash
+
+    # 2. 코드 품질 검사 도구 실행
+    - name: Run Code Quality Checks (e.g., Flake8)
+      # pyproject.toml에 등록된 linters가 실행된다고 가정
+      run: |
+        poetry run flake8 .
+
+    # 3. Django 마이그레이션 및 테스트 실행 (도전 미션 포함)
+    - name: Run Migrations and Tests
+      run: |
+        echo "Running database migrations..."
+        poetry run python manage.py migrate --noinput
+        echo "Running tests..."
+        poetry run python manage.py test

@@ -35,6 +35,21 @@ repos:
         # 마이그레이션 파일은 보통 타입 검사에서 제외합니다.
         exclude: (?x)^(migrations/)
 
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --recursive
+
   # 5. Django 템플릿 검사: djlint
   # HTML 유효성, 접근성, 템플릿 문법 등을 검사하여 프론트엔드 코드 품질을 관리
   - repo: https://github.com/monosans/djlint
