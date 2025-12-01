@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.db import transaction
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from users import views as user_views
@@ -29,8 +30,8 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # DRF API URL
-    path('accounts', include('accounts.urls')), # accounts 앱의 URL을 포함
-
+    path('accounts/', include('accounts.urls')), # accounts 앱의 URL을 포함
+    path('transaction/', include(transaction.urls)),
     # Login페이지
     path('users/', include('users.urls')),
 ]
