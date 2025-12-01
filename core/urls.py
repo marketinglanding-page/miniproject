@@ -18,6 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from users import views as user_views
+
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,4 +30,7 @@ urlpatterns = [
 
     # DRF API URL
     path('accounts', include('accounts.urls')), # accounts 앱의 URL을 포함
+
+    # Login페이지
+    path('users/', include('users.urls')),
 ]
