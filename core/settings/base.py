@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     # 서드파티 앱
     "rest_framework",
     "drf_spectacular",
+    'rest_framework_simplejwt.token_blacklist',
     # 사용자 정의 앱
     # # 'your_app_name',
     "users.apps.UsersConfig",
@@ -147,6 +148,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- REST Framework and Spectacular Settings ---
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+# --- drf-spectacular 옵션 ---
+SPECTACULAR_SETTINGS = {
+    'TITLE': '가계부 API',
+    'DESCRIPTION': '가계부 시스템 API 문서',
+    'VERSION': 'v1',
 }
 
 # 커스텀 User 모델을 사용하도록 지정

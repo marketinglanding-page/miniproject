@@ -1,0 +1,96 @@
+-- 테이블이 존재하지 않을 때만 생성합니다.
+-- 1. users 테이블
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,         -- 이메일(UNIQUE 100)
+    password VARCHAR(255) NOT NULL,             -- 비밀번호(255)
+    name VARCHAR(50) NOT NULL,                  -- 이름(50)
+    nickname VARCHAR(50) UNIQUE NOT NULL,       -- 닉네임(UNIQUE 50)
+    phone_number VARCHAR(20),                   -- 전화번호(20)
+    is_superuser BOOLEAN DEFAULT FALSE,         -- 최고관리자
+    is_active BOOLEAN DEFAULT TRUE,             -- 활성화여부
+    last_login TIMESTAMP,                       -- 마지막 로그인 시각
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 생성 시각
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 수정 시각
+);
+
+-- 2. token_blacklist 테이블
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id SERIAL PRIMARY KEY,
+    token VARCHAR(512) NOT NULL,                -- 만료된 토큰(512)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 생성 시각
+);
+
+-- 3. common_codes 테이블
+-- (다른 테이블과의 FK 연결 없음. 다만, 다른 테이블이 이 테이블의 code를 참조하여 사용함)
+CREATE TABLE IF NOT EXISTS common_codes (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(50) NOT NULL,              -- 코드분류(50) (예: BANK_CODE)
+    code VARCHAR(50) NOT NULL,                  -- 코드(50) (예: 004)
+    description VARCHAR(100),                   -- 설명(100) (예: 국민은행)
+    UNIQUE (category, code)
+);
+
+-- 4. accounts 테이블
+CREATE TABLE IF NOT EXISTS accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 사용자 ID (FK: users.id)
+    account_number VARCHAR(50) UNIQUE NOT NULL, -- 계좌번호(UNIQUE 50)
+    bank_code VARCHAR(10) NOT NULL,             -- 은행코드(10) (common_codes.code 참조)
+    account_type VARCHAR(20) NOT NULL,          -- 계좌종류(20) (common_codes.code 참조)
+    name VARCHAR(100) NOT NULL,                 -- 계좌별칭(100)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 생성 시각
+);
+
+-- 5. transactions 테이블 (balance_after 제외)
+CREATE TABLE IF NOT EXISTS transactions (
+    id SERIAL PRIMARY KEY,
+    account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, -- 계좌 ID (FK: accounts.id)
+    transaction_type VARCHAR(10) NOT NULL,      -- 입금/출금(10) (common_codes.code 참조)
+    transaction_method VARCHAR(20),             -- 거래방식(20) (common_codes.code 참조)
+    amount BIGINT NOT NULL,                     -- 금액(원 단위)
+    transaction_details VARCHAR(255),           -- 상세내역(255)
+    transaction_timestamp TIMESTAMP NOT NULL    -- 거래일시
+);
+
+-- 6. analysis_requests 테이블
+CREATE TABLE IF NOT EXISTS analysis_requests (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 사용자 ID (FK: users.id)
+    analysis_target VARCHAR(20) NOT NULL,       -- 수입/지출(20) (common_codes.code 참조)
+    period_type VARCHAR(10) NOT NULL,           -- 기간유형(10) (common_codes.code 참조)
+    start_date DATE NOT NULL,                   -- 분석 시작일
+    end_date DATE NOT NULL,                     -- 분석 종료일
+    result_image_url VARCHAR(255),              -- 차트이미지 URL(255)
+    result_summary TEXT,                        -- 결과요약
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 생성 시각
+);
+
+-- 7. analysis_schedule 테이블
+CREATE TABLE IF NOT EXISTS analysis_schedule (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 사용자 ID (FK: users.id)
+    schedule_type VARCHAR(10) NOT NULL,         -- 주간/월간(10)
+    run_day VARCHAR(10) NOT NULL,               -- 실행요일/날짜(10)
+    is_active BOOLEAN DEFAULT TRUE              -- 활성화 여부
+);
+
+-- 8. notifications 테이블
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 사용자 ID (FK: users.id)
+    message TEXT NOT NULL,                      -- 알림 메시지
+    is_read BOOLEAN DEFAULT FALSE,              -- 읽음 여부
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 생성 시각
+);
+
+-- 9. notification_settings 테이블
+CREATE TABLE IF NOT EXISTS notification_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 사용자 ID (FK: users.id)
+    setting_type VARCHAR(50) NOT NULL,          -- 설정유형(50)
+    threshold BIGINT,                           -- 기준금액(원 단위)
+    is_email_active BOOLEAN DEFAULT FALSE,      -- 이메일 알림 활성화 여부
+    is_app_active BOOLEAN DEFAULT TRUE,         -- 앱 알림 활성화 여부
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 생성 시각
+);

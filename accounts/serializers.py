@@ -11,7 +11,6 @@ class AccountSerializer(serializers.ModelSerializer):
             'bank_code',
             'account_type',
             'name',
-            'balance',
             'created_at',
             'user'
         ]

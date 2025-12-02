@@ -8,6 +8,7 @@ services:
       POSTGRES_PASSWORD: budget1234
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./init_data:/docker-entrypoint-initdb.d
     ports:
       - "5440:5432"
     healthcheck:
