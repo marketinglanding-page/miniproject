@@ -48,7 +48,7 @@ class Transaction(models.Model):
     class Meta:
         db_table = 'transactions'
         verbose_name = '거래 내역'
-        ordering = ['-transaction_timestamp', '-created_at']
+        ordering = ['-transaction_timestamp'] 
 
     def __str__(self):
         return f"[{self.transaction_timestamp.date()}] {self.account.account_number} | {self.transaction_type}: {self.amount}"

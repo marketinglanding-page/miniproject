@@ -19,8 +19,9 @@ from django.contrib import admin
 from django.db import transaction
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from users import views as user_views
+from rest_framework import permissions
 
+from users import views as user_views
 
 
 urlpatterns = [

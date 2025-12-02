@@ -27,7 +27,7 @@ class NotificationSetting(models.Model):
         primary_key=True,
         verbose_name="사용자"
     )
-    setting_type = models.CharField(verbose_name="설정 유형", max_length=10)     # # common code에 명시할 코드를 미리 적어놓으시는거 추천드립니다.
+    setting_type = models.CharField(verbose_name="설정 유형", max_length=50)     # # common code에 명시할 코드를 미리 적어놓으시는거 추천드립니다.
     threshold = models.BigIntegerField(verbose_name="기준 금액(원 단위)")
     is_email_active = models.BooleanField(verbose_name="이메일 알림 활성화", default=False)
     is_app_active = models.BooleanField(verbose_name="앱 알림 활성화", default=True)
