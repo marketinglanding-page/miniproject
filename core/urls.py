@@ -33,4 +33,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')), # accounts 앱의 URL을 포함
     path('transactions/', include('transactions.urls')),
     path('users/', include('users.urls')),
+    path('analysis/', include('analysis.urls')),
 ]

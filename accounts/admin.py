@@ -2,24 +2,29 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Account  # Custom User 모델 불러오기
+from users.models import User
+from .models import Account  # Custom User 모델 불러오기
 
-@admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    # Admin 페이지에서 볼 수 있는 필드 목록
-    list_display = ('email', 'is_staff', 'is_active', 'date_joined')
-
-    # 목록 페이지에서 검색 가능한 필드 지정
-    search_fields = ('email', 'first_name', 'last_name')
-
-    # 목록 페이지에서 필터링할 수 있는 항목 지정
-    list_filter = ('is_staff', 'is_active', 'date_joined')
-
-    # 필드셋을 커스터마이징하여 정보의 구조를 정리할 수 있습니다.
-    # (예: UserAdmin의 fieldsets를 상속받아 custom 필드를 추가하는 방식)
-    fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('some_custom_field',)}), # 만약 custom 필드가 있다면 추가
-    )
+# ----------------------------------------------------
+#  User 모델 등록 (CustomUserAdmin) 코드는 제거합니다.
+#          이는 users/admin.py에서 처리되어야 합니다.
+# ----------------------------------------------------
+# @admin.register(User)
+# class CustomUserAdmin(UserAdmin):
+#     # Admin 페이지에서 볼 수 있는 필드 목록
+#     list_display = ('email', 'is_staff', 'is_active', 'date_joined')
+#
+#     # 목록 페이지에서 검색 가능한 필드 지정
+#     search_fields = ('email', 'first_name', 'last_name')
+#
+#     # 목록 페이지에서 필터링할 수 있는 항목 지정
+#     list_filter = ('is_staff', 'is_active', 'date_joined')
+#
+#     # 필드셋을 커스터마이징하여 정보의 구조를 정리할 수 있습니다.
+#     # (예: UserAdmin의 fieldsets를 상속받아 custom 필드를 추가하는 방식)
+#     fieldsets = UserAdmin.fieldsets + (
+#         (None, {'fields': ('some_custom_field',)}), # 만약 custom 필드가 있다면 추가
+#     )
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):

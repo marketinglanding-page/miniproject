@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 서드파티 앱
     "rest_framework",
+    "django_filters",
     "drf_spectacular",
     # 사용자 정의 앱
     # # 'your_app_name',
@@ -72,6 +73,8 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",
     "analysis.apps.AnalysisConfig",
     "notifications.apps.NotificationsConfig",
+    "django_celery_beat",  # 스케줄링 관리를 위한 앱
+    "django_celery_results",  # Task 결과를 DB에 저장하기 위한 앱
 ]
 
 MIDDLEWARE = [
@@ -151,3 +154,45 @@ REST_FRAMEWORK = {
 
 # 커스텀 User 모델을 사용하도록 지정
 AUTH_USER_MODEL = 'users.User'
+
+# ----------------------------------------------
+# 2. Celery 설정 수정 지점: Eager Execution 및 백엔드 설정
+# ----------------------------------------------
+# Celery Worker 없이 Task를 동기적으로 즉시 실행(Redis 미사용)
+CELERY_TASK_ALWAYS_EAGER = True
+
+# 브로커 URL 설정은 Eager 모드에서는 무시되지만 더미 값을 유지
+CELERY_BROKER_URL = 'django-db://'
+
+# Celery 결과 백엔드: Task 결과를 Django 데이터베이스에 저장
+CELERY_RESULT_BACKEND = 'django-celery-results'
+
+# 태스크 데이터 직렬화 방식
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 시간대를 인식하도록 설정
+CELERY_TIMEZONE = 'Asia/Seoul'
+
+# ----------------------------------------------
+# 3. Celery Beat (스케줄러) 설정 수정 지점
+# ----------------------------------------------
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    # 매주 월요일 오전 9시 30분에 주간 분석 Task 실행
+    'weekly-analysis-schedule': {
+        'task': 'analysis.tasks.perform_analysis_task',
+        # 매주 월요일 (day_of_week=1) 9시 30분
+        'schedule': crontab(hour=9, minute=30, day_of_week=1),
+        # Task에 전달할 인자: (임시 user_id=1, period_type='WEEKLY', analysis_target='ALL')
+        'args': (1, 'WEEKLY', 'ALL'),
+    },
+    # 매월 1일 오전 9시 30분에 월간 분석 Task 실행
+    'monthly-analysis-schedule': {
+        'task': 'analysis.tasks.perform_analysis_task',
+        # 매월 1일 (day_of_month=1) 9시 30분
+        'schedule': crontab(hour=9, minute=30, day_of_month=1),
+        'args': (1, 'MONTHLY', 'ALL'),
+    },
+}
