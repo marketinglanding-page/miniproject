@@ -1,63 +1,52 @@
-from django.shortcuts import render,redirect
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from .serializers import RegisterSerializer, UserSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
-from django.contrib.auth import authenticate, login, logout
-from .models import User
+# 회원가입
+class RegisterAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
 
-
-def login_index(request):
-    if request.method == 'POST':
-        if request.POST.get('account') == "join":
-            return redirect('users:JoinUrl')
-
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        user = authenticate(request, email=email, password=password)
-
-        if user:
-            login(request, user)
-            return redirect('users:LoginUrl')
-        else:
-            return render(request, "login.html", {"error_msg": "ID혹은 비밀번호가 틀림"})
-
-    return render(request,"login.html")
-
-def logout_index(request):
-    if request.method == 'POST':
-        logout(request)
-    return redirect('users:LoginUrl')
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: OpenApiResponse(response=RegisterSerializer)}
+    )
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({'detail': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def join_index(request):
-    if request.method == 'POST':
-        if request.POST.get('account') == 'cancel':
-            return redirect('users:JoinUrl')
+# 토큰 발급
+class MyTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [permissions.AllowAny]
 
-        email = request.POST.get('email')
-        name = request.POST.get('name')
-        nickname = request.POST.get('nickname')
-        password = request.POST.get('password')
-        password_check = request.POST.get('password_check')
 
-        #아이디 중복 검사
-        if User.objects.filter(email=email).exists():
-            return render(request, "join.html", {"error_msg":"이미 존재하는 아이디임."})
+# 리프레시 토큰 엔드포인트
+class MyTokenRefreshView(TokenRefreshView):
+    permission_classes = [permissions.AllowAny]
 
-        #닉네임 중복 검사
-        if User.objects.filter(nickname=nickname).exists():
-            return render(request, "join.html", {"error_msg":"이미 존재하는 닉네임임."})
 
-        #비밀번호 불일치 검사
-        if password != password_check:
-            return render(request, "join.html",{"error_msg":"비밀번호가 일치하지않음."})
+# 로그아웃
+class LogoutAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-        #user 생성
-        user = User.objects.create_user(
-            email=email,
-            name=name,
-            nickname=nickname,
-            password=password
-        )
-
-        return redirect('users:LoginUrl')
-    return render(request,"join.html")
+    @extend_schema(
+        request=None,
+        responses={204: OpenApiResponse(description='Logged out')}
+    )
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'detail': 'refresh token 필요'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'detail': '유효한 refresh token이 아님'}, status=status.HTTP_400_BAD_REQUEST)
