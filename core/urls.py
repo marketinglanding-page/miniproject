@@ -34,8 +34,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')), # accounts 앱의 URL을 포함
     path('transactions/', include('transactions.urls')),
     path('users/', include('users.urls')),
-
-    # Swagger 문서
-    path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-
+    path('analysis/', include('analysis.urls')),
 ]

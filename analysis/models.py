@@ -4,6 +4,16 @@ from django.conf import settings
 UserModel = settings.AUTH_USER_MODEL
 
 class AnalysisRequest(models.Model):
+    TARGET_CHOICES = (
+        ("INCOME", "수입"),
+        ("EXPENSE", "지출"),
+        ("ALL", "전체"),
+    )
+    PERIOD_CHOICES = (
+        ("WEEKLY", "주간"),
+        ("MONTHLY", "월간"),
+    )
+
     user = models.ForeignKey(
         UserModel,
         on_delete=models.CASCADE,
@@ -21,7 +31,11 @@ class AnalysisRequest(models.Model):
     class Meta:
         db_table = 'analysis_requests'
         verbose_name = '분석 요청'
-        ordering = ['-created_at']
+        verbose_name_plural = "분석 요청 목록"
+        ordering = ['-created_at']  # created_at 필드를 기준으로 내림차순(-) 정렬
+
+    def __str__(self):
+        return f"{self.user.nickname} - {self.period_type} 분석 ({self.start_date}~{self.end_date})"
 
 
 class AnalysisSchedule(models.Model):
