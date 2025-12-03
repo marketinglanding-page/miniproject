@@ -54,7 +54,7 @@ jobs:
     - name: Set Environment Variables for Django
       run: |
         # Dev 설정 모듈 사용 (CI/Test에 적합)
-        echo "DJANGO_SETTINGS_MODULE=core.settings.dev" >> $GITHUB_ENV
+        echo "DJANGO_SETTINGS_MODULE=core.settings.prod" >> $GITHUB_ENV
         # Docker Compose에서 사용하는 환경 변수 이름 그대로 매핑
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
         echo "DB_USERNAME=${{ secrets.DB_USER }}" >> $GITHUB_ENV

@@ -1,47 +1,97 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: budget_db
+    container_name: prod_budget_db # 💡 운영용 컨테이너 이름으로 변경
     environment:
-      POSTGRES_DB: budget
-      POSTGRES_USER: budget_admin
-      POSTGRES_PASSWORD: budget1234
+      # POSTGRES_* 변수는 보안을 위해 외부에서 관리되어야 하지만, 예시를 위해 유지
+      POSTGRES_DB: prod_budget # 💡 DB 이름 운영용으로 분리
+      POSTGRES_USER: budget_prod_admin # 💡 사용자 이름 변경
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # 💡 환경 변수로 변경 (Docker Secret 또는 .env 파일 사용 권장)
     volumes:
+      # 💡 운영 환경에서는 데이터 보존을 위해 볼륨 매핑을 유지합니다.
       - db-data:/var/lib/postgresql/data
-      - ./init_data:/docker-entrypoint-initdb.d
-    ports:
-      - "5440:5432"
+      # 💡 운영 환경에서는 초기 데이터가 있다면 이곳에 둡니다.
+      # - ./init_data:/docker-entrypoint-initdb.d
+    # 💡 운영 환경에서는 DB 포트를 외부에 직접 노출하지 않는 것이 보안상 좋습니다.
+    # ports:
+    #   - "5440:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U budget_admin -d budget" ]
+      test: [ "CMD-SHELL", "pg_isready -U budget_prod_admin -d prod_budget" ] # 💡 DB 정보 업데이트
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:7.0-alpine
+    container_name: prod_budgeting_redis # 💡 운영용 컨테이너 이름으로 변경
+    # expose: 6379는 내부 통신용으로 유지됩니다.
+    expose:
+      - 6379
+
   web:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: budgeting_site
-    command: sh -c "sh /app/scripts/run.sh"
-    volumes:
-      - ../:/app
+    container_name: prod_budgeting_site # 💡 운영용 컨테이너 이름으로 변경
+
+    # 💡 운영 환경의 CMD 변경: Gunicorn으로 Django를 서빙하고, 정적 파일 서빙을 포함합니다.
+    # Nginx/Gunicorn 구성에 따라 정적 파일(collectstatic)을 미리 실행해야 합니다.
+    command: sh -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+
+    # 💡 운영 환경에서는 개발 편의를 위한 로컬 디렉토리 마운트(Volume)를 제거하고,
+    # Dockerfile 빌드 단계에서 복사된 최종 코드만 사용해야 합니다.
+    # volumes:
+    #   - ../:/usr/src/app
+
     ports:
-      - "8000:8000"
+      - "80:8000" # 💡 운영 환경에서는 보통 80/443 포트로 노출합니다. (Nginx가 없다면)
+
     environment:
+      # 💡 운영용 설정 파일로 변경
       - DJANGO_SETTINGS_MODULE=core.settings.prod
-      - SECRET_KEY=c924tofl&x+y@d73!(3svrhf5o9+@f@z4i=0wok8^1cg4vpz=b
-      - DB_USERNAME=budget_admin
-      - DB_PASSWORD=budget1234
+      # 💡 중요한 보안 정보는 환경 변수 또는 Docker Secrets를 통해 주입
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_USERNAME=budget_prod_admin
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=budget
-      - DB_URL=postgres://budget_admin:budget1234@db:5432/budget
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30     # 30분
-      - REFRESH_TOKEN_EXPIRE_MINUTES=1440  # 24시간
+      - DB_NAME=prod_budget
+      - DB_URL=postgres://budget_prod_admin:${DB_PASSWORD}@db:5432/prod_budget
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=1440
+
     depends_on:
       db:
         condition: service_healthy
+
+  celery_worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: prod_budgeting_worker # 💡 운영용 컨테이너 이름으로 변경
+    command: sh -c "celery -A core worker -l info"
+    # volumes: - ../:/usr/src/app # 💡 운영 환경에서는 마운트 해제
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings.prod # 💡 운영용 설정 파일로 변경
+    depends_on:
+      - db
+      - redis
+      - web
+
+  celery_beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: prod_budgeting_beat # 💡 운영용 컨테이너 이름으로 변경
+    command: sh -c "celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    # volumes: - ../:/usr/src/app # 💡 운영 환경에서는 마운트 해제
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings.prod # 💡 운영용 설정 파일로 변경
+    depends_on:
+      - db
+      - redis
+      - web
 
 volumes:
   db-data:
