@@ -10,8 +10,29 @@ from rest_framework.permissions import IsAuthenticated
 
 class AnalysisResultListView(generics.ListAPIView):
     """
-    5. 응답으로 분석 결과 리스트를 반환해주는 API View
-    6. 쿼리 파라미터를 이용해서 기간 별로(주간, 월간) 분석 데이터를 가지고 옴
+    ## 지출 및 예산 분석 결과 조회 및 요청
+
+    이 엔드포인트는 사용자가 **특정 기간(주간/월간)** 및 **대상(지출/수입/전체)**에 대한
+    재무 분석 결과를 조회하거나 새로운 분석을 요청하는 기능을 제공합니다.
+
+    ### 주요 기능
+    1.  **기록 조회:** 이미 수행된 분석 기록(AnalysisRequest) 목록을 반환합니다.
+    2.  **분석 요청:** 쿼리 파라미터를 사용하여 요청 시, 즉시 분석을 수행하고 그 결과를 `201 Created`로 반환합니다.
+
+    ### 쿼리 파라미터 (분석 요청 시 필수)
+
+    | 파라미터 이름 | 설명 | 필수 여부 | 예시 값 |
+    | :--- | :--- | :--- | :--- |
+    | `period_type` | 분석 기간 유형 | 선택 (기본값: `MONTHLY`) | `WEEKLY`, `MONTHLY` |
+    | `analysis_target` | 분석 대상 항목 | 선택 (기본값: `ALL`) | `EXPENSE`, `INCOME`, `ALL` |
+
+    ### 응답 상태 코드
+
+    * **`200 OK`**: 기존에 저장된 분석 결과를 목록으로 반환할 때.
+    * **`201 CREATED`**: 요청된 기간/대상에 대해 **새로운 분석**을 수행하고 결과를 반환했을 때.
+    * **`204 NO CONTENT`**: 분석은 수행되었으나 해당 기간에 거래 내역이 없어 결과를 생성할 수 없을 때. (본문에 `detail` 메시지 포함)
+    * **`400 BAD REQUEST`**: `period_type` 등 쿼리 파라미터 값이 유효하지 않을 때.
+    * **`401 UNAUTHORIZED`**: 인증되지 않은 사용자가 접근했을 때.
     """
     serializer_class = AnalysisSerializer
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능하다고 가정

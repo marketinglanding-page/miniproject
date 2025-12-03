@@ -19,7 +19,7 @@ DATABASES = {
         "NAME": get_secret("DB_NAME", "budget"),
         "USER": get_secret("DB_USER", "budget_admin"),
         "PASSWORD": get_secret("DB_PASSWORD"),
-        "HOST": get_secret("DB_HOST", "db"), # Docker Compose 서비스 이름 또는 'localhost'
+        "HOST": get_secret("DB_HOST", 'localhost'), # Docker Compose 서비스 이름 또는 'localhost'
         "PORT": get_secret("DB_PORT", "5432"),
     }
 }

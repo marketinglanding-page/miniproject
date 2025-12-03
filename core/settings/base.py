@@ -62,9 +62,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 서드파티 앱
-    "rest_framework",
     "django_filters",
     "drf_spectacular",
+    'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     # 사용자 정의 앱
     # # 'your_app_name',
@@ -172,11 +172,7 @@ AUTH_USER_MODEL = 'users.User'
 # ----------------------------------------------
 # 2. Celery 설정 수정 지점: Eager Execution 및 백엔드 설정
 # ----------------------------------------------
-# Celery Worker 없이 Task를 동기적으로 즉시 실행(Redis 미사용)
-CELERY_TASK_ALWAYS_EAGER = True
-
-# 브로커 URL 설정은 Eager 모드에서는 무시되지만 더미 값을 유지
-CELERY_BROKER_URL = 'django-db://'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 
 # Celery 결과 백엔드: Task 결과를 Django 데이터베이스에 저장
 CELERY_RESULT_BACKEND = 'django-celery-results'

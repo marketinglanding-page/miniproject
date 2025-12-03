@@ -4,13 +4,13 @@ from accounts.models import Account
 
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
-        ('INCOME', '입금'),
-        ('EXPENSE', '출금'),
+        ('DEPOSIT', '입금'),
+        ('WITHDRAW', '출금'),
     ]
 
     TRANSACTION_METHOD_CHOICES = [
         ('BANK_TRANSFER', '은행 이체'),
-        ('CARD_PAYMENT', '카드 결제'),
+        ('CARD', '카드 결제'),
         ('CASH', '현금'),
         ('ETC', '기타'),
     ]

@@ -31,8 +31,8 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # DRF API URL
+    path('users/', include('users.urls')),
     path('accounts/', include('accounts.urls')), # accounts 앱의 URL을 포함
     path('transactions/', include('transactions.urls')),
-    path('users/', include('users.urls')),
     path('analysis/', include('analysis.urls')),
 ]

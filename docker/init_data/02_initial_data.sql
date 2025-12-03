@@ -112,9 +112,11 @@ INSERT INTO common_codes (category, code, description) VALUES
 INSERT INTO common_codes (category, code, description) VALUES
 ('TRANSACTION_METHOD', 'ATM', 'ATM 거래'),
 ('TRANSACTION_METHOD', 'TRANSFER', '계좌이체'),
+('TRANSACTION_METHOD', 'BANK_TRANSFER', '은행이체'),
 ('TRANSACTION_METHOD', 'AUTOMATIC_TRANSFER', '자동이체'),
 ('TRANSACTION_METHOD', 'CARD', '카드결제'),
-('TRANSACTION_METHOD', 'INTEREST', '이자');
+('TRANSACTION_METHOD', 'INTEREST', '이자'),
+('TRANSACTION_METHOD', 'ETC', '기타');
 
 -- 5. 분석 기간 타입 (ANALYSIS_TYPES)
 INSERT INTO common_codes (category, code, description) VALUES

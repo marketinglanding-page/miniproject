@@ -5,7 +5,7 @@ from django.db import models
 
 class CommonCode(models.Model):
     category = models.CharField(verbose_name="코드분류", max_length=50)
-    code = models.CharField(verbose_name="코드", max_length=10)
+    code = models.CharField(verbose_name="코드", max_length=50)
     description = models.CharField(verbose_name="설명", max_length=100)
 
     class Meta:

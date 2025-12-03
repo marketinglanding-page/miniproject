@@ -5,51 +5,59 @@ description = ""
 authors = ["Jamily <ajin20823@gmail.com>"]
 readme = "README.md"
 
+package-mode = false
 # ----------------------------------------------------
 # 1. 프로덕션 의존성 (배포 시 필수)
 # [tool.poetry.dependencies] 섹션은 기본적으로 prod 그룹 역할을 합니다.
 # ----------------------------------------------------
 [tool.poetry.dependencies]
 python = "^3.13"
-# Django 및 웹 서비스 관련
+
+#Django 및 웹 서비스 관련
 django = "5.2.8"
 gunicorn = "23.0.0"
-# PostgreSQL 데이터베이스 드라이버
-psycopg2-binary = "^2.9.11"
-# Django REST Framework (DRF) 관련
 asgiref = "3.11.0"
-django-restframework = "^0.0.1"
-# 문서화 도구
-drf-spectacular = "^0.29.0"
-# 기타 라이브러리
-packaging = "25.0"
-sqlparse = "0.5.3"
-# 참고: DRF는 Django를 의존하므로, DRF를 사용하면 django-restframework 대신
-# 'djangorestframework'를 사용하거나, 해당 패키지를 확인해야 합니다.
 
-# ----------------------------------------------------
-# 2. 개발 의존성 (로컬 개발 및 테스트 시 필수)
-# [tool.poetry.group.dev.dependencies]
-# ----------------------------------------------------
+#PostgreSQL 데이터베이스 드라이버
+psycopg2-binary = "^2.9.11"
+
+#Django REST Framework (DRF) 및 인증 관련 (런타임 필수)
+djangorestframework = "^3.16.1"
+djangorestframework-simplejwt = "^5.5.1"
 django-filter = "^25.2"
-pandas = "^2.3.3"
-matplotlib = "^3.10.7"
+
+#문서화 도구
+drf-spectacular = "^0.29.0"
+
+#비동기 작업 (Celery 관련)
 celery = "^5.6.0"
 django-celery-beat = "^2.8.1"
 django-celery-results = "^2.6.0"
-[tool.poetry.group.dev.dependencies]
-djangorestframework = "^3.16.1"
+
+#기타
 django-environ = "^0.12.0"
-# 테스트
+packaging = "25.0"
+sqlparse = "0.5.3"
+
+#----------------------------------------------------
+#2. 개발 의존성 (로컬 개발 및 테스트 시 필수)
+#----------------------------------------------------
+
+[tool.poetry.group.dev.dependencies]
+#분석/데이터 관련 (로컬 개발 환경 전용)
+pandas = "^2.3.3"
+matplotlib = "^3.10.7"
+
+#테스트
 pytest = "^9.0.1"
-# 코드 포맷팅/린팅
+
+#코드 포맷팅/린팅
 ruff = "^0.14.6"    # 보조 코드 검사 + 자동 수정 도구
 black = "^25.11.0"  # 코드 자동 정리 도구
-# 타입 검사
-mypy = "^1.18.2"
-# 커밋 훅
-pre-commit = "^4.5.0"
+mypy = "^1.18.2"    # 타입 검사
 
+#커밋 훅
+pre-commit = "^4.5.0"
 
 [build-system]
 requires = ["poetry-core"]
